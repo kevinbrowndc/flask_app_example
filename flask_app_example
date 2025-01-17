@@ -1,0 +1,115 @@
+from flask import Flask, render_template, make_response, redirect, request, url_for
+import random
+from flask_sslify import SSLify
+import requests
+import smtplib
+from email.mime.text import MIMEText
+import openai
+from bs4 import BeautifulSoup as bs
+import requests
+from pexels_api import API
+app = Flask(__name__)
+
+
+
+openai.api_key = open_ai_key
+SITE_KEY = 'site_key
+SECRET_KEY = secret_key
+VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
+sslify = SSLify(app, permanent=True)
+
+PEXELS_API_KEY = pexel_key
+api = API(PEXELS_API_KEY)
+
+@app.route('/audit')
+def seo_redirect():
+    return redirect("https://www.minabocks.com/seo", code=301)
+
+@app.route("/")
+
+def home():
+
+    return render_template('home.html')
+
+
+@app.route('/sitemap.xml')
+
+def sitemap():
+    resp = make_response(render_template('sitemap.xml'))
+    resp.headers['Content-type'] = 'text/xml; charset=utf-8'
+    return resp
+
+@app.route('/robots.txt')
+
+def robots():
+    resp1 = make_response(render_template('robots.txt'))
+    resp1.headers['Content-type'] = 'text/txt; charset=utf-8'
+    return resp1
+
+@app.route('/style.css')
+
+def style():
+    resp1 = make_response(render_template('style.css'))
+    resp1.headers['Content-type'] = 'text/css; charset=utf-8'
+    return resp1
+
+@app.route("/contact", methods = ['GET','POST'])
+
+def contact():
+
+    try:
+
+        if request.method == "POST":
+
+            secret_response = request.form['g-recaptcha-response']
+            verify_response = requests.post(url=f'{VERIFY_URL}?secret={SECRET_KEY}&response={secret_response}').json()
+            if verify_response['success'] == True or verify_response['score'] > 0.5:
+                wholename = request.form['name']
+                contactname = request.form['name']
+                contactemail = request.form['email']
+                contactmessage = request.form['message']
+                x = contactname.split()
+                contactname = x[0].title()
+
+                sender_email = "minabocks@gmail.com"
+                sender_password = "shlipqcidesanxpv"
+                recipient_email = "kevinbrown.dc@gmail.com"
+                subject = contactname + " sent you a message."
+                msg = "<html><head></head><body>"
+                msg += wholename + "<br>" + contactemail + "<br>" + contactmessage + "<br>"
+                msg += "</body></html>"
+
+                html_message = MIMEText(msg, 'html')
+                html_message['Subject'] = subject
+                html_message['From'] = sender_email
+                html_message['To'] = recipient_email
+                server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+                server.login(sender_email, sender_password)
+                server.sendmail(sender_email, recipient_email, html_message.as_string())
+                server.quit()
+
+                return render_template("thankyou.html", contactname=contactname), {"Refresh": "5; url=https://www.minabocks.com"}
+
+
+
+            else:
+                return render_template('contact.html', site_key=SITE_KEY)
+    except:
+        render_template('contact.html', site_key=SITE_KEY)
+
+    return render_template('contact.html', site_key=SITE_KEY)
+
+@app.route('/thankyou', methods = ['GET','POST'])
+def thankyou():
+
+    return render_template('thankyou.html')
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html')
+
+
+
+if __name__ == "__main__":
+    app.run()
