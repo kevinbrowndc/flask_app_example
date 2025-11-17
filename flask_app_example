@@ -72,7 +72,7 @@ def contact():
                 contactname = x[0].title()
 
                 sender_email = "minabocks@gmail.com"
-                sender_password = "shlipqcidesanxpv"
+                sender_password = ""
                 recipient_email = "kevinbrown.dc@gmail.com"
                 subject = contactname + " sent you a message."
                 msg = "<html><head></head><body>"
